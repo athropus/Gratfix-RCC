@@ -309,7 +309,7 @@
     .timer-card {
       text-align: center;
       padding: 40px 20px;
-      display: none; 
+      display: block; /* Sempre visível agora */
     }
 
     .timer-card p {
@@ -321,7 +321,7 @@
     }
 
     .timer-card h2 {
-      font-size: 4.5rem;
+      font-size: 4rem; /* Ajustado para caber HH:MM:SS confortavelmente */
       color: var(--gold-light);
       text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
       margin: 10px 0;
@@ -508,8 +508,8 @@
 
     <!-- CRONÔMETRO CENTRAL -->
     <div class="card timer-card" id="timer-container">
-      <p>Próxima gratificação em</p>
-      <h2 id="timer">20:00</h2>
+      <p>Próxima gratificação em (Último Registro)</p>
+      <h2 id="timer">00:20:00</h2>
       <div class="timer-subtext" id="timer-subtext">Aguardando registro...</div>
     </div>
 
@@ -665,13 +665,6 @@
         `;
         tbody.appendChild(tr);
       });
-
-      const timerContainer = document.getElementById('timer-container');
-      if (registros.length === 1) {
-        timerContainer.style.display = 'block';
-      } else {
-        timerContainer.style.display = 'none';
-      }
     }
 
     function gratificarMilitar(index) {
@@ -720,18 +713,23 @@
           }
         });
 
-        if (registros.length === 1) {
-          const regUnico = registros[0];
-          const diffMs = regUnico.dataProximaObj - agora;
+        // Atualiza o relógio central com base no último militar adicionado
+        if (registros.length > 0) {
+          const ultimoReg = registros[registros.length - 1];
+          const diffMs = ultimoReg.dataProximaObj - agora;
           let diffSec = Math.floor(diffMs / 1000);
           
           if (diffSec < 0) diffSec = 0;
 
-          const min = Math.floor(diffSec / 60);
+          const horas = Math.floor(diffSec / 3600);
+          const min = Math.floor((diffSec % 3600) / 60);
           const sec = diffSec % 60;
 
-          document.getElementById('timer').innerText = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-          document.getElementById('timer-subtext').innerText = `${regUnico.nome} - ${regUnico.funcao}`;
+          document.getElementById('timer').innerText = `${String(horas).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+          document.getElementById('timer-subtext').innerText = `${ultimoReg.nome} - ${ultimoReg.funcao}`;
+        } else {
+          document.getElementById('timer').innerText = "00:20:00";
+          document.getElementById('timer-subtext').innerText = "Aguardando registro...";
         }
       }, 1000);
     }
