@@ -66,6 +66,7 @@
       border-top: 4px solid var(--gold);
       background: linear-gradient(135deg, #0d0d0d 0%, #161616 100%);
       gap: 15px;
+      overflow: visible; /* Garante que o avatar grande possa se estender */
     }
 
     .header-left {
@@ -97,44 +98,37 @@
       align-items: center;
       justify-content: flex-end;
       flex: 1;
+      gap: 15px;
+    }
+
+    /* Contêiner do Avatar de Corpo Inteiro grande (do lado de fora) */
+    .header-avatar-large {
+      height: 110px; /* Altura generosa em escala com o banner esquerdo */
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      overflow: hidden;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
+    }
+
+    .header-avatar-large img {
+      height: 160px; /* Escala grande do Habbo de corpo inteiro */
+      width: auto;
+      object-fit: contain;
+      margin-bottom: -15px; /* Alinha os pés perfeitamente com a base */
     }
 
     .user-badge {
       background-color: rgba(212, 175, 55, 0.08);
       border: 1px solid var(--gold);
       color: var(--gold-light);
-      padding: 6px 20px 6px 6px;
+      padding: 8px 20px;
       border-radius: 30px;
       font-size: 0.9rem;
       font-weight: bold;
       display: flex;
       align-items: center;
-      gap: 12px;
       text-transform: uppercase;
-      position: relative;
-      overflow: visible; /* Permite que o corpo inteiro saia um pouco do quadrado verde se necessário */
-    }
-
-    /* Caixa/Quadrado do Avatar de Corpo Inteiro */
-    .user-avatar-container {
-      width: 55px;
-      height: 60px;
-      border: 1px solid var(--gold);
-      background-color: rgba(0, 0, 0, 0.4);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .user-badge img {
-      width: 90px;
-      height: auto;
-      object-fit: none;
-      object-position: center 20%; /* Foca na parte superior/média do corpo do Habbo */
-      transform: scale(1.1);
     }
 
     /* ================= MODAIS ================= */
@@ -451,7 +445,7 @@
   <div id="welcomeModal" class="modal-overlay" style="display: none;">
     <div class="modal-box" style="max-width: 800px;">
       <div class="welcome-content">
-        <!-- Avatar fixo do yycecedilha na mensagem de entrada -->
+        <!-- Avatar fixo do yycecedilha na mensagem de boas-vindas -->
         <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?user=yycecedilha&action=std&direction=2&head_direction=3&gesture=sml&size=l" alt="Avatar Habbo" class="welcome-avatar">
         <div>
           <h2 class="modal-title">Obrigado por acessar a ferramenta 'Gratifix'!</h2>
@@ -478,11 +472,12 @@
       </div>
       <h1>Gratificações RCC</h1>
       <div class="header-right">
+        <!-- Avatar grande de corpo inteiro posicionado do lado de fora -->
+        <div class="header-avatar-large">
+          <img id="avatar-header" src="" alt="Avatar Corpo Inteiro">
+        </div>
+        <!-- Badge limpa contendo apenas o nick -->
         <div class="user-badge">
-          <div class="user-avatar-container">
-            <!-- Avatar de corpo inteiro do usuário logado -->
-            <img id="avatar-header" src="" alt="Avatar Corpo Inteiro">
-          </div>
           <span id="nome-usuario-top">USUÁRIO</span>
         </div>
       </div>
@@ -606,8 +601,8 @@
         return; 
       }
 
-      // URL da API do Habbo configurada para corpo inteiro do usuário logado
-      const urlAvatarCorpo = `https://www.habbo.com.br/habbo-imaging/avatarimage?user=${nick}&action=std&direction=2&head_direction=3&gesture=sml&size=m`;
+      // API do Habbo em tamanho grande de corpo inteiro para o cabeçalho
+      const urlAvatarCorpo = `https://www.habbo.com.br/habbo-imaging/avatarimage?user=${nick}&action=std&direction=2&head_direction=3&gesture=sml&size=l`;
 
       document.getElementById('avatar-header').src = urlAvatarCorpo;
       document.getElementById('nome-usuario-top').innerText = nick.toUpperCase();
