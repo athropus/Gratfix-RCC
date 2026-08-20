@@ -148,7 +148,7 @@
       border-top: 5px solid var(--gold);
       border-radius: 12px;
       padding: 35px;
-      max-width: 700px;
+      max-width: 950px;
       width: 90%;
       box-shadow: 0 15px 30px rgba(0,0,0,0.8);
       text-align: center;
@@ -161,12 +161,26 @@
       text-align: left;
     }
 
-    .welcome-avatar {
+    .welcome-avatars-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       flex-shrink: 0;
-      width: 140px;
+    }
+
+    .avatars-row {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 12px;
       height: 200px;
+    }
+
+    .welcome-avatar {
+      height: 165px;
+      width: auto;
       object-fit: contain;
-      filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.2));
+      filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.25));
     }
 
     .modal-title {
@@ -185,8 +199,9 @@
     .modal-credits {
       color: var(--gold);
       font-style: italic;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       margin-top: 20px;
+      line-height: 1.4;
     }
 
     .login-input {
@@ -431,7 +446,7 @@
 <body>
 
   <div id="loginModal" class="modal-overlay">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width: 550px;">
       <h2 class="modal-title">Acesso ao Sistema</h2>
       <p class="modal-text" style="text-align: center;">Digite o seu Nick do Habbo para continuar.</p>
       <input type="text" id="inputNick" class="login-input" placeholder="Seu Nickname">
@@ -441,9 +456,20 @@
   </div>
 
   <div id="welcomeModal" class="modal-overlay" style="display: none;">
-    <div class="modal-box" style="max-width: 800px;">
+    <div class="modal-box">
       <div class="welcome-content">
-        <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?user=yycecedilha&action=std&direction=2&head_direction=3&gesture=sml&size=l" alt="Avatar Habbo" class="welcome-avatar">
+        <!-- Grupo de Avatares no Modal -->
+        <div class="welcome-avatars-group">
+          <div class="avatars-row">
+            <!-- 1. yycecedilha (Esquerda) -->
+            <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?user=yycecedilha&action=std&direction=2&head_direction=3&gesture=sml&size=m" alt="yycecedilha" class="welcome-avatar" title="yycecedilha">
+            <!-- 2. MacTrevah (Meio) -->
+            <img src="https://i.imgur.com/TcClZJj.png" alt="MacTrevah" class="welcome-avatar" title="MacTrevah">
+            <!-- 3. ,Policial (Direita) -->
+            <img src="https://i.imgur.com/GkL1t6Y.png" alt=",Policial" class="welcome-avatar" title=",Policial">
+          </div>
+        </div>
+
         <div>
           <h2 class="modal-title">Obrigado por acessar a ferramenta 'Gratifix'!</h2>
           <div class="modal-text">
@@ -452,7 +478,7 @@
             <p>Atenção: a ferramenta não se responsabiliza por eventuais erros cometidos durante o uso. Portanto, caso algum valor seja registrado incorretamente e isso resulte em punição, o uso da ferramenta não servirá como justificativa.</p>
             <br>
             <p>Aproveite bem a ferramenta e valorize seus subalternos! 😊</p>
-            <p class="modal-credits">desenvolvido por MacTrevah e reformulado por yycecedilha.</p>
+            <p class="modal-credits">Este projeto foi programado e desenvolvido por ,Policial e reformulado por yycecedilha, com idealização de MacTrevah.</p>
           </div>
           <button class="btn-modal" onclick="acessarSistema()" style="margin-top: 15px;">Ir para o Painel</button>
         </div>
@@ -517,7 +543,7 @@
 
     <!-- CRONÔMETRO CENTRAL -->
     <div class="card timer-card" id="timer-container">
-      <p>Próxima gratificação em (Cascata / 1º da Fila)</p>
+      <p>Próxima Gratificação</p>
       <h2 id="timer">00:20:00</h2>
       <div class="timer-subtext" id="timer-subtext">Aguardando registro...</div>
     </div>
@@ -548,13 +574,15 @@
 
   <script>
     let registros = [];
-    let contagensDiarias = {}; // Armazena contagens no formato: {"nome_funcao": quantidade}
+    let contagensDiarias = {}; 
     let loopGeral = null;
+    let idFocoCronometro = null; // Controla qual registro está fixado no cronômetro central
     const TEMPO_GRATIFICACAO_SEGUNDOS = 20 * 60; // 20 minutos
 
     window.onload = function() {
       const dadosSalvos = sessionStorage.getItem('registros_rcc');
       const contagensSalvas = sessionStorage.getItem('contagens_rcc');
+      const focoSalvo = sessionStorage.getItem('foco_rcc');
       
       if (dadosSalvos) {
         try {
@@ -572,6 +600,10 @@
         } catch(e) { console.error(e); }
       }
 
+      if (focoSalvo) {
+        idFocoCronometro = Number(focoSalvo);
+      }
+
       atualizarTabela();
       iniciarLoopGlobal();
     };
@@ -583,6 +615,11 @@
       }));
       sessionStorage.setItem('registros_rcc', JSON.stringify(dadosParaSalvar));
       sessionStorage.setItem('contagens_rcc', JSON.stringify(contagensDiarias));
+      if (idFocoCronometro !== null) {
+        sessionStorage.setItem('foco_rcc', idFocoCronometro);
+      } else {
+        sessionStorage.removeItem('foco_rcc');
+      }
     }
 
     function tocarAlertaSonoro() {
@@ -597,7 +634,7 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.3); 
-      } catch(e) { console.log('Áudio bloqueado pelo navegador até haver interação.'); }
+      } catch(e) { console.log('Áudio bloqueado pelo navegador.'); }
     }
 
     function realizarLogin() {
@@ -607,7 +644,7 @@
         return; 
       }
 
-      const urlAvatarCorpo = `https://www.habbo.com.br/habbo-imaging/avatarimage?user=${nick}&action=std&direction=2&head_direction=3&gesture=sml&size=l`;
+      const urlAvatarCorpo = `https://www.habbo.com.br/habbo-imaging/avatarimage?user=${encodeURIComponent(nick)}&action=std&direction=2&head_direction=3&gesture=sml&size=l`;
 
       document.getElementById('avatar-header').src = urlAvatarCorpo;
       document.getElementById('nome-usuario-top').innerText = nick.toUpperCase();
@@ -655,6 +692,12 @@
       };
 
       registros.push(novoRegistro);
+
+      // Se for o primeiro registro adicionado ou não houver foco definido, define nele
+      if (registros.length === 1 || idFocoCronometro === null) {
+        idFocoCronometro = novoRegistro.id;
+      }
+
       salvarSessao();
       atualizarTabela();
       
@@ -665,14 +708,13 @@
       return `${String(data.getHours()).padStart(2, '0')}:${String(data.getMinutes()).padStart(2, '0')}:${String(data.getSeconds()).padStart(2, '0')}`;
     }
 
-    // Retorna a cor com base na escala de verde até vermelho conforme o limite de 6
     function obterCorPorQuantidade(qtd) {
-      if (qtd <= 1) return '#00ff66'; // Verde vivo
+      if (qtd <= 1) return '#00ff66'; 
       if (qtd === 2) return '#66ff33';
-      if (qtd === 3) return '#ccff33'; // Amarelo esverdeado
-      if (qtd === 4) return '#ffcc00'; // Amarelo
-      if (qtd === 5) return '#ff6600'; // Laranja
-      return '#ff3333';                // Vermelho (limite 6 ou mais)
+      if (qtd === 3) return '#ccff33'; 
+      if (qtd === 4) return '#ffcc00'; 
+      if (qtd === 5) return '#ff6600'; 
+      return '#ff3333';                
     }
 
     function atualizarTabela() {
@@ -692,18 +734,20 @@
           <td>${reg.proximaGratificacao}</td>
           <td><span class="status-badge ${reg.alertaDisparado ? 'status-pronto' : 'status-aguardando'}" id="status-${index}">${reg.alertaDisparado ? 'PRONTO' : 'AGUARDANDO'}</span></td>
           <td>
-            <button class="action-button btn-action btn-gratificar" onclick="gratificarMilitar(${index})">Gratificar</button>
-            <button class="action-button btn-action btn-excluir" onclick="excluirRegistro(${index})">Excluir</button>
+            <button class="action-button btn-action btn-gratificar" onclick="gratificarMilitar(${reg.id})">Gratificar</button>
+            <button class="action-button btn-action btn-excluir" onclick="excluirRegistro(${reg.id})">Excluir</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    function gratificarMilitar(index) {
-      const reg = registros.splice(index, 1)[0]; // Remove o item da posição atual
+    function gratificarMilitar(id) {
+      const index = registros.findIndex(r => r.id === id);
+      if (index === -1) return;
+
+      const reg = registros.splice(index, 1)[0]; 
       
-      // Incrementa o contador da dupla "Nome + Função"
       const chaveKey = `${reg.nome.toLowerCase()}_${reg.funcao}`;
       if (!contagensDiarias[chaveKey]) {
         contagensDiarias[chaveKey] = 1;
@@ -723,14 +767,29 @@
       reg.dataProximaObj = novaData;
       reg.alertaDisparado = false;
 
-      registros.push(reg); // Joga pro final da listagem
+      registros.push(reg); // Vai para o final da fila
+
+      // Mudar o foco do cronômetro central para o próximo elemento que sobrou no topo (se houver)
+      if (registros.length > 0) {
+        idFocoCronometro = registros[0].id;
+      } else {
+        idFocoCronometro = null;
+      }
 
       salvarSessao();
       atualizarTabela();
     }
 
-    function excluirRegistro(index) {
+    function excluirRegistro(id) {
+      const index = registros.findIndex(r => r.id === id);
+      if (index === -1) return;
+
       registros.splice(index, 1);
+
+      if (idFocoCronometro === id) {
+        idFocoCronometro = registros.length > 0 ? registros[0].id : null;
+      }
+
       salvarSessao();
       atualizarTabela();
     }
@@ -760,9 +819,15 @@
           }
         });
 
-        if (registros.length > 0) {
-          const primeiroReg = registros[0];
-          const diffMs = primeiroReg.dataProximaObj - agora;
+        // Localizar o registro atualmente fixado no cronômetro central
+        let regFoco = registros.find(r => r.id === idFocoCronometro);
+        if (!regFoco && registros.length > 0) {
+          regFoco = registros[0];
+          idFocoCronometro = regFoco.id;
+        }
+
+        if (regFoco) {
+          const diffMs = regFoco.dataProximaObj - agora;
           let diffSec = Math.floor(diffMs / 1000);
           
           if (diffSec < 0) diffSec = 0;
@@ -772,7 +837,7 @@
           const sec = diffSec % 60;
 
           document.getElementById('timer').innerText = `${String(horas).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-          document.getElementById('timer-subtext').innerText = `${primeiroReg.nome} - ${primeiroReg.funcao}`;
+          document.getElementById('timer-subtext').innerText = `${regFoco.nome} - ${regFoco.funcao}`;
         } else {
           document.getElementById('timer').innerText = "00:20:00";
           document.getElementById('timer-subtext').innerText = "Aguardando registro...";
