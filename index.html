@@ -665,7 +665,7 @@
       document.getElementById('segundos').value = String(agora.getSeconds()).padStart(2, '0');
     }
 
-    function registrarMilitar() {
+function registrarMilitar() {
       const nome = document.getElementById('nome').value.trim();
       const funcao = document.getElementById('funcao').value;
       const h = parseInt(document.getElementById('horas').value) || 0;
@@ -681,6 +681,12 @@
       dataInicio.setHours(h, m, s);
       const dataProxima = new Date(dataInicio.getTime() + TEMPO_GRATIFICACAO_SEGUNDOS * 1000);
 
+      // NOVO: Define a chave e já inicia com 1 gratificação computada no registro
+      const chaveKey = `${nome.toLowerCase()}_${funcao}`;
+      if (!contagensDiarias[chaveKey]) {
+        contagensDiarias[chaveKey] = 1; // Começa em 1 ao registrar
+      }
+
       const novoRegistro = {
         id: Date.now(),
         nome,
@@ -693,7 +699,6 @@
 
       registros.push(novoRegistro);
 
-      // Se for o primeiro registro adicionado ou não houver foco definido, define nele
       if (registros.length === 1 || idFocoCronometro === null) {
         idFocoCronometro = novoRegistro.id;
       }
@@ -750,7 +755,7 @@
       
       const chaveKey = `${reg.nome.toLowerCase()}_${reg.funcao}`;
       if (!contagensDiarias[chaveKey]) {
-        contagensDiarias[chaveKey] = 1;
+        contagensDiarias[chaveKey] = 0;
       }
       
       if (contagensDiarias[chaveKey] >= 6) {
